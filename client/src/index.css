@@ -181,12 +181,24 @@
   }
 
   .tech-card {
-    background: rgba(15, 21, 53, 0.8);
-    border: 1px solid rgba(0, 217, 255, 0.3);
-    border-radius: 0.65rem;
+    background: rgba(15, 21, 53, 0.7);
+    border: 1px solid rgba(0, 217, 255, 0.25);
+    border-radius: 8px;
     backdrop-filter: blur(10px);
-    box-shadow: 0 0 20px rgba(0, 217, 255, 0.1), inset 0 0 20px rgba(0, 217, 255, 0.05);
-    animation: glow 3s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.08), inset 0 0 20px rgba(0, 217, 255, 0.03);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tech-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00D9FF, transparent);
+    animation: flowLight 2s linear infinite;
   }
 
   .tech-border {
@@ -199,6 +211,26 @@
     background: linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.3), transparent);
     background-size: 1000px 100%;
     animation: flowLight 3s linear infinite;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #00D9FF;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .card-title::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #00D9FF;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0, 217, 255, 0.8);
   }
 
   @media (min-width: 640px) {

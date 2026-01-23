@@ -1,6 +1,6 @@
 {
   "locations": [
-    { "id": 1, "name": "跑道东侧", "totalCount": 1245 },
+    { "id": 1, "name": "跑道1东侧", "totalCount": 1245 },
     { "id": 2, "name": "塔台区域", "totalCount": 892 },
     { "id": 3, "name": "草坪区", "totalCount": 756 }
   ],

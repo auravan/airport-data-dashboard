@@ -1,13 +1,8 @@
 {
   "locations": [
-    { "id": 1, "name": "跑道1东侧", "totalCount": 1245 },
-    { "id": 2, "name": "塔台区域", "totalCount": 892 },
-    { "id": 3, "name": "草坪区", "totalCount": 756 }
-  ],
-  "timeSegmentData": [
-    { "location": "跑道东侧", "count": 145 },
-    { "location": "塔台区域", "count": 98 },
-    { "location": "草坪区", "count": 67 }
+    { "id": 1, "name": "着陆端", "totalCount": 245 },
+    { "id": 2, "name": "滑跑端", "totalCount": 892 },
+    { "id": 3, "name": "离陆端", "totalCount": 756 }
   ],
   "birdSpecies": [
     { "name": "麻雀", "count": 520, "color": "#00D9FF" },
@@ -15,41 +10,6 @@
     { "name": "老鹰", "count": 210, "color": "#00FF88" },
     { "name": "鸽子", "count": 183, "color": "#FF00FF" }
   ],
-  "trendData": [
-    { "date": "2024-01-08", "count": 450 },
-    { "date": "2024-01-09", "count": 520 },
-    { "date": "2024-01-10", "count": 680 },
-    { "date": "2024-01-11", "count": 890 },
-    { "date": "2024-01-12", "count": 1100 },
-    { "date": "2024-01-13", "count": 1320 },
-    { "date": "2024-01-14", "count": 1520 }
-  ],
-  "weatherData": {
-    "today": {
-      "date": "2024-01-14",
-      "tempHigh": 28,
-      "tempLow": 18,
-      "windDirection": "NE",
-      "windSpeed": 12,
-      "condition": "晴朗"
-    },
-    "tomorrow": {
-      "date": "2024-01-15",
-      "tempHigh": 26,
-      "tempLow": 16,
-      "windDirection": "E",
-      "windSpeed": 8,
-      "condition": "多云"
-    },
-    "dayAfter": {
-      "date": "2024-01-16",
-      "tempHigh": 24,
-      "tempLow": 14,
-      "windDirection": "SE",
-      "windSpeed": 15,
-      "condition": "阴天"
-    }
-  },
   "recentMonitoring": [
     { "species": "麻雀", "location": "跑道东侧", "time": "2024-01-14 14:32:45" },
     { "species": "燕子", "location": "草坪区", "time": "2024-01-14 14:31:22" },
@@ -59,5 +19,38 @@
     { "species": "燕子", "location": "塔台区域", "time": "2024-01-14 14:23:11" },
     { "species": "鸽子", "location": "跑道东侧", "time": "2024-01-14 14:21:44" },
     { "species": "麻雀", "location": "塔台区域", "time": "2024-01-14 14:19:29" }
+  ],
+  "weeklyBirdData": [
+    { "date": "2024-01-15", "count": 420 },
+    { "date": "2024-01-16", "count": 580 },
+    { "date": "2024-01-17", "count": 720 },
+    { "date": "2024-01-18", "count": 650 },
+    { "date": "2024-01-19", "count": 890 },
+    { "date": "2024-01-20", "count": 1100 },
+    { "date": "2024-01-21", "count": 1350 }
+  ],
+  "dailyActivityData": [
+    { "time": "06:00", "count": 120 },
+    { "time": "09:00", "count": 2810 },
+    { "time": "12:00", "count": 450 },
+    { "time": "15:00", "count": 620 },
+    { "time": "18:00", "count": 380 },
+    { "time": "21:00", "count": 150 }
+  ],
+  "predictionVsActualData": [
+    { "time": "06:00", "predicted": 1115, "actual": 120 },
+    { "time": "09:00", "predicted": 275, "actual": 280 },
+    { "time": "12:00", "predicted": 440, "actual": 450 },
+    { "time": "15:00", "predicted": 610, "actual": 620 },
+    { "time": "18:00", "predicted": 375, "actual": 380 },
+    { "time": "21:00", "predicted": 145, "actual": 150 }
+  ],
+  "timeSegmentAnalysisData": [
+    { "time": "凌晨", "count": 85 },
+    { "time": "上午", "count": 320 },
+    { "time": "中午", "count": 580 },
+    { "time": "下午", "count": 720 },
+    { "time": "傍晚", "count": 420 },
+    { "time": "夜晚", "count": 95 }
   ]
 }

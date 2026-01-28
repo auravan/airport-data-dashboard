@@ -4,15 +4,12 @@ import { Cloud, Wind, Thermometer, Eye } from "lucide-react";
 
 interface MockData {
   locations: Array<{ id: number; name: string; totalCount: number }>;
-  timeSegmentData: Array<{ location: string; count: number }>;
   birdSpecies: Array<{ name: string; count: number; color: string }>;
-  trendData: Array<{ date: string; count: number }>;
-  weatherData: {
-    today: { date: string; tempHigh: number; tempLow: number; windDirection: string; windSpeed: number; condition: string };
-    tomorrow: { date: string; tempHigh: number; tempLow: number; windDirection: string; windSpeed: number; condition: string };
-    dayAfter: { date: string; tempHigh: number; tempLow: number; windDirection: string; windSpeed: number; condition: string };
-  };
   recentMonitoring: Array<{ species: string; location: string; time: string }>;
+  weeklyBirdData: Array<{ date: string; count: number }>;
+  dailyActivityData: Array<{ time: string; count: number }>;
+  predictionVsActualData: Array<{ time: string; predicted: number; actual: number }>;
+  timeSegmentAnalysisData: Array<{ time: string; count: number }>;
 }
 
 export default function Dashboard() {
@@ -50,47 +47,6 @@ export default function Dashboard() {
     mockData.recentMonitoring[scrollIndex],
     mockData.recentMonitoring[(scrollIndex + 1) % mockData.recentMonitoring.length],
     mockData.recentMonitoring[(scrollIndex + 2) % mockData.recentMonitoring.length],
-  ];
-
-  // 模拟下周鸟情数据
-  const weeklyBirdData = [
-    { date: '2024-01-15', count: 420 },
-    { date: '2024-01-16', count: 580 },
-    { date: '2024-01-17', count: 720 },
-    { date: '2024-01-18', count: 650 },
-    { date: '2024-01-19', count: 890 },
-    { date: '2024-01-20', count: 1100 },
-    { date: '2024-01-21', count: 1350 },
-  ];
-
-  // 当日鸟情活动数据
-  const dailyActivityData = [
-    { time: '06:00', count: 120 },
-    { time: '09:00', count: 280 },
-    { time: '12:00', count: 450 },
-    { time: '15:00', count: 620 },
-    { time: '18:00', count: 380 },
-    { time: '21:00', count: 150 },
-  ];
-
-  // 昨日预测vs今日实际数据
-  const predictionVsActualData = [
-    { time: '06:00', predicted: 115, actual: 120 },
-    { time: '09:00', predicted: 275, actual: 280 },
-    { time: '12:00', predicted: 440, actual: 450 },
-    { time: '15:00', predicted: 610, actual: 620 },
-    { time: '18:00', predicted: 375, actual: 380 },
-    { time: '21:00', predicted: 145, actual: 150 },
-  ];
-
-  // 时段鸟情分析数据
-  const timeSegmentAnalysisData = [
-    { time: '凌晨', count: 85 },
-    { time: '上午', count: 320 },
-    { time: '中午', count: 580 },
-    { time: '下午', count: 720 },
-    { time: '傍晚', count: 420 },
-    { time: '夜晚', count: 95 },
   ];
 
   return (
@@ -171,7 +127,7 @@ export default function Dashboard() {
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
               <div className="card-title text-lg mb-3">下周鸟情趋势预测</div>
               <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={weeklyBirdData}>
+                <LineChart data={mockData.weeklyBirdData}>
                   <defs>
                     <linearGradient id="weeklyGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#00D9FF" stopOpacity={0.8} />
@@ -207,7 +163,7 @@ export default function Dashboard() {
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
               <div className="card-title text-lg mb-3">当日鸟情活动分析</div>
               <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={dailyActivityData}>
+                <AreaChart data={mockData.dailyActivityData}>
                   <defs>
                     <linearGradient id="dailyGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#00FF88" stopOpacity={0.6} />
@@ -241,7 +197,7 @@ export default function Dashboard() {
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
               <div className="card-title text-lg mb-3">昨日预测 vs 今日实际</div>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={predictionVsActualData}>
+                <BarChart data={mockData.predictionVsActualData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 0, 255, 0.15)" />
                   <XAxis dataKey="time" stroke="#a0aeff" style={{ fontSize: "12px" }} />
                   <YAxis stroke="#a0aeff" style={{ fontSize: "12px" }} />
@@ -273,7 +229,7 @@ export default function Dashboard() {
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
               <div className="card-title text-lg mb-3">时段鸟情活动分析</div>
               <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={timeSegmentAnalysisData}>
+                <LineChart data={mockData.timeSegmentAnalysisData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 153, 255, 0.15)" />
                   <XAxis dataKey="time" stroke="#a0aeff" style={{ fontSize: "12px" }} />
                   <YAxis stroke="#a0aeff" style={{ fontSize: "12px" }} />

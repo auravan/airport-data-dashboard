@@ -119,173 +119,28 @@ airport-bird-dashboard/
 
 ---
 
-## 快速配置视频
-
-### 方式 1：使用 HTTP 流（最简单）
-
-#### 步骤 1：获取视频流 URL
-
-从您的摄像头获取 HTTP 流地址，例如：
-```
-https://your-camera.com/stream.m3u8
-```
-
-#### 步骤 2：修改代码
-
-打开文件：`/client/src/pages/Dashboard.tsx`
-
-找到大约第 170-185 行的视频区域代码，替换为：
-
-```tsx
-{/* 鸟类识别实时监控 */}
-<div className="tech-card p-3 h-40 relative">
-  <div className="card-title text-sm">鸟类识别实时监控录像</div>
-  <div className="w-full h-full bg-black/50 rounded border border-accent/40 relative overflow-hidden">
-    <video 
-      width="100%" 
-      height="100%" 
-      controls 
-      autoPlay 
-      muted 
-      style={{ objectFit: 'cover' }}
-    >
-      <source src="https://your-camera.com/stream.m3u8" type="application/x-mpegURL" />
-      您的浏览器不支持视频播放
-    </video>
-    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, transparent, rgba(0, 217, 255, 0.2), transparent)", backgroundSize: "200% 100%", animation: "flowLight 3s linear infinite" }}></div>
-  </div>
-</div>
-```
-
-**将 `https://your-camera.com/stream.m3u8` 替换为您的实际流地址**
-
-#### 步骤 3：保存并测试
-
-- 保存文件
-- 刷新浏览器
-- 检查视频是否播放
-
-### 方式 2：使用 RTSP 摄像头（需要后端代理）
-
-**需要升级项目到 web-db-user 版本**
-
-**详细说明**：参考 [`VIDEO_STREAM_CONFIGURATION.md`](./VIDEO_STREAM_CONFIGURATION.md)
-
----
-
 ## 快速部署
-
-### 方式 1：Manus 内置托管（推荐）
-
-#### 步骤 1：确保所有更改已保存
-
-```bash
-cd /home/ubuntu/airport-bird-dashboard
-git status
-```
-
-#### 步骤 2：打开 Manus 管理界面
-
-1. 访问 Manus 管理界面
-2. 找到 "airport-bird-dashboard" 项目
-3. 点击进入项目详情
-
-#### 步骤 3：发布项目
-
-1. 找到最新的检查点
-2. 点击 **"Publish"** 按钮
-3. 等待部署完成（1-5 分钟）
-
-#### 步骤 4：获取公网 URL
-
-部署完成后，您将获得一个公网 URL：
-
-```
-https://airport-bird-dashboard.manus.space
-```
-
-### 方式 2：自定义服务器部署
-
-#### 步骤 1：登录服务器
-
-```bash
-ssh user@your-server-ip
-```
-
-#### 步骤 2：克隆项目
-
-```bash
-git clone https://github.com/your-username/airport-bird-dashboard.git
-cd airport-bird-dashboard
-```
-
-#### 步骤 3：安装依赖
+#### 步骤 1：安装依赖
 
 ```bash
 pnpm install
 ```
 
-#### 步骤 4：构建项目
+#### 步骤 2：构建项目
 
 ```bash
 pnpm build
 ```
 
-#### 步骤 5：启动应用
+#### 步骤 3：启动应用
 
 ```bash
 # 使用 PM2（推荐）
 npm install -g pm2
-pm2 start "npm run start" --name "bird-dashboard"
+pm2 start "npm run start" --name "bird-dashboard"或者“pnpm run dev”
 ```
-
-#### 步骤 6：配置 Nginx 反向代理
-
-```bash
-sudo nano /etc/nginx/sites-available/bird-dashboard
-```
-
-添加配置并重启 Nginx：
-
-```bash
-sudo systemctl restart nginx
-```
-
-**详细说明**：参考 [`DEPLOYMENT_GUIDE.md`](./DEPLOYMENT_GUIDE.md)
 
 ---
-
-## 常见问题
-
-### Q: 数据修改后页面没有更新？
-
-**A**: 
-1. 检查 JSON 文件是否保存成功
-2. 清除浏览器缓存（Ctrl+Shift+Delete）
-3. 刷新页面（F5）
-
-### Q: 如何添加新的监测地点？
-
-**A**: 
-1. 在 `locations` 数组中添加新地点
-2. 在 `timeSegmentData` 中为新地点添加数据
-3. 确保地点名称一致
-
-### Q: 视频无法播放？
-
-**A**: 
-1. 检查视频流 URL 是否正确
-2. 确保摄像头在线且可访问
-3. 检查浏览器控制台错误信息
-
-### Q: 部署后无法访问？
-
-**A**: 
-1. 检查应用是否正常运行
-2. 检查防火墙设置
-3. 检查 DNS 配置
-
-### Q: 如何修改标题和颜色？
 
 **A**: 
 - **标题**：编辑 `Dashboard.tsx` 中的 `<h1>` 标签
@@ -312,7 +167,6 @@ sudo systemctl restart nginx
 | 修改标题 | `/client/src/pages/Dashboard.tsx` | React 组件 |
 | 详细数据指南 | `./DATA_CONFIGURATION.md` | 完整文档 |
 | 详细视频指南 | `./VIDEO_STREAM_CONFIGURATION.md` | 完整文档 |
-| 详细部署指南 | `./DEPLOYMENT_GUIDE.md` | 完整文档 |
 
 ---
 

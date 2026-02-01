@@ -6,12 +6,20 @@
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>机场周边鸟类信息汇总大屏</title>    
-    <!-- THIS IS THE START OF A COMMENT BLOCK, BLOCK TO BE DELETED: Google Fonts here, example:
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    THIS IS THE END OF A COMMENT BLOCK, BLOCK TO BE DELETED -->
+    <title>机场周边鸟类信息汇总大屏</title>
+    <!-- 高德地图 JS API 2.0 -->
+    <script type="text/javascript">
+      window._AMapSecurityConfig = {
+        // 如果使用安全密钥模式，请在高德控制台生成并填入
+        // securityJsCode: '你的安全密钥',
+      }
+    </script>
+    <!-- 如果 2.0 版本报错，可以尝试换成 1.4.15 版本 在此填入你的高德js api-->
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.15&key="></script>
+    <style>
+      .amap-logo, .amap-copyright { display: none !important; }
+      .amap-container { background: #0a0e27 !important; }
+    </style>
   </head>
 
   <body>

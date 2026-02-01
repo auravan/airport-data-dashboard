@@ -1,8 +1,11 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import DataEntry from "@/pages/DataEntry";
+import HistoryData from "@/pages/HistoryData";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { DataProvider } from "./contexts/DataContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 
@@ -11,6 +14,8 @@ function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/data-entry"} component={DataEntry} />
+      <Route path={"/history-data"} component={HistoryData} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
@@ -30,10 +35,12 @@ function App() {
         defaultTheme="dark"
         // switchable
       >
-        <TooltipProvider>
-          <Toaster />
-          <Router />
-        </TooltipProvider>
+        <DataProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Router />
+          </TooltipProvider>
+        </DataProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

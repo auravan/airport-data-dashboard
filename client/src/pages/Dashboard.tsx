@@ -1,36 +1,123 @@
 import { useEffect, useState } from "react";
+import { Link } from "wouter";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
-import { Cloud, Wind, Thermometer, Eye } from "lucide-react";
+import { useData, type MockData } from "@/contexts/DataContext";
+import AMapBackground from "@/components/AMapBackground";
 
-interface MockData {
-  locations: Array<{ id: number; name: string; totalCount: number }>;
-  birdSpecies: Array<{ name: string; count: number; color: string }>;
-  recentMonitoring: Array<{ species: string; location: string; time: string }>;
-  weeklyBirdData: Array<{ date: string; count: number }>;
-  dailyActivityData: Array<{ time: string; count: number }>;
-  predictionVsActualData: Array<{ time: string; predicted: number; actual: number }>;
-  timeSegmentAnalysisData: Array<{ time: string; count: number }>;
+/** 获取今日日期 YYYY-MM-DD */
+function getTodayDateString(): string {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+/** 简单种子随机：同一种子返回同一序列 */
+function seededRandom(seed: number): () => number {
+  return () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+}
+
+/** 生成历史 7 天（含今天）的随机数据 */
+function generateLast7DaysRandom(displayDate: string): Array<{ date: string; count: number }> {
+  const base = new Date(displayDate + "T00:00:00");
+  const seed = base.getTime() % 233280;
+  const rnd = seededRandom(seed);
+  const result: Array<{ date: string; count: number }> = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(base);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    result.push({ date: dateStr, count: Math.floor(200 + rnd() * 1200) });
+  }
+  return result;
+}
+
+/** 根据展示日期生成/筛选数据：监测记录按日期过滤，其他图表直接使用实时数据 */
+function getDisplayData(raw: MockData, displayDate: string): MockData {
+  // 监测记录按日期筛选（只显示今天的）
+  const recentForDate = (raw.recentMonitoring || []).filter((m) => m.time.startsWith(displayDate));
+  const recentMonitoring =
+    recentForDate.length > 0
+      ? recentForDate
+      : raw.recentMonitoring.length > 0
+        ? raw.recentMonitoring.slice(0, 3) // 没有今日数据时显示最近 3 条
+        : [
+            { species: "—", location: "—", time: `${displayDate} 暂无数据` },
+            { species: "—", location: "—", time: `${displayDate} 暂无数据` },
+            { species: "—", location: "—", time: `${displayDate} 暂无数据` },
+          ];
+
+  // 近 7 天数据：优先使用录入数据，没有则用随机数据填充
+  const weeklyBirdData = (() => {
+    const randomData = generateLast7DaysRandom(displayDate);
+    if (!raw.weeklyBirdData || raw.weeklyBirdData.length === 0) {
+      return randomData;
+    }
+    // 合并：录入的数据优先，缺失日期用随机数据填充
+    return randomData.map((rd) => {
+      const entered = raw.weeklyBirdData.find((w) => w.date === rd.date);
+      return entered ? entered : rd;
+    });
+  })();
+
+  // 其他图表直接使用上下文中的实时数据
+  const timeSlots = ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00"];
+  const dailyActivityData =
+    raw.dailyActivityData?.length > 0
+      ? raw.dailyActivityData
+      : timeSlots.map((time) => ({ time, count: 0 }));
+
+  const predictionVsActualData =
+    raw.predictionVsActualData?.length > 0
+      ? raw.predictionVsActualData
+      : timeSlots.map((time) => ({ time, predicted: 0, actual: 0 }));
+
+  const segmentSlots = ["凌晨", "上午", "中午", "下午", "傍晚", "夜晚"];
+  const timeSegmentAnalysisData =
+    raw.timeSegmentAnalysisData?.length > 0
+      ? raw.timeSegmentAnalysisData
+      : segmentSlots.map((time) => ({ time, count: 0 }));
+
+  const birdSpecies = raw.birdSpecies?.length > 0 ? raw.birdSpecies : [];
+  const locations = raw.locations?.length > 0 ? raw.locations : [];
+
+  return {
+    locations,
+    birdSpecies,
+    recentMonitoring,
+    weeklyBirdData,
+    dailyActivityData,
+    predictionVsActualData,
+    timeSegmentAnalysisData,
+  };
 }
 
 export default function Dashboard() {
-  const [mockData, setMockData] = useState<MockData | null>(null);
-  const [startDate, setStartDate] = useState("2024-01-14");
-  const [endDate, setEndDate] = useState("2024-01-14");
+  const { data: contextData, loading } = useData();
+  const [displayDate, setDisplayDate] = useState(getTodayDateString);
   const [scrollIndex, setScrollIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
-    fetch("/mock-data.json")
-      .then((res) => res.json())
-      .then((data) => setMockData(data));
+    const tick = () => setDisplayDate((prev) => {
+      const now = getTodayDateString();
+      return now !== prev ? now : prev;
+    });
+    const id = setInterval(tick, 60000);
+    return () => clearInterval(id);
   }, []);
 
+  const displayData = contextData ? getDisplayData(contextData, displayDate) : null;
+
   useEffect(() => {
+    if (!displayData) return;
+    const len = displayData.recentMonitoring.length;
     const interval = setInterval(() => {
-      setScrollIndex((prev) => (prev + 1) % (mockData?.recentMonitoring.length || 1));
+      setScrollIndex((prev) => (prev + 1) % (len || 1));
     }, 3000);
     return () => clearInterval(interval);
-  }, [mockData]);
+  }, [displayData]);
 
   useEffect(() => {
     const timeInterval = setInterval(() => {
@@ -39,55 +126,54 @@ export default function Dashboard() {
     return () => clearInterval(timeInterval);
   }, []);
 
-  if (!mockData) {
+  if (loading || !contextData || !displayData) {
     return <div className="w-full h-screen bg-background flex items-center justify-center text-foreground">加载中...</div>;
   }
 
+  const recent = displayData.recentMonitoring;
   const visibleMonitoring = [
-    mockData.recentMonitoring[scrollIndex],
-    mockData.recentMonitoring[(scrollIndex + 1) % mockData.recentMonitoring.length],
-    mockData.recentMonitoring[(scrollIndex + 2) % mockData.recentMonitoring.length],
+    recent[scrollIndex % recent.length],
+    recent[(scrollIndex + 1) % recent.length],
+    recent[(scrollIndex + 2) % recent.length],
   ];
 
   return (
-    <div
-      className="w-full h-screen bg-background relative overflow-hidden"
-      style={{
-        backgroundImage: "url('/images/airport-satellite-map.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      {/* 轻度覆盖层 - 让背景图可见 */}
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]"></div>
+    <div className="w-full h-screen bg-background relative overflow-hidden">
+      {/* 高德地图背景 - 可缩放拖拽 */}
+      <AMapBackground
+        center={[116.603039, 40.080098]} // 北京首都国际机场
+        zoom={14}
+      />
+
+      {/* 轻度覆盖层 - 不挡地图操作，颜色调浅 */}
+      <div className="absolute inset-0 bg-black/30 pointer-events-none" style={{ zIndex: 1 }}></div>
 
       {/* 科幻粒子效果 */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 2 }}>
         <div className="absolute top-1/4 left-1/4 w-1 h-1 bg-accent rounded-full animate-pulse opacity-60"></div>
         <div className="absolute top-1/3 right-1/3 w-1 h-1 bg-accent rounded-full animate-pulse opacity-40" style={{ animationDelay: '1s' }}></div>
         <div className="absolute bottom-1/4 left-1/2 w-1 h-1 bg-accent rounded-full animate-pulse opacity-50" style={{ animationDelay: '2s' }}></div>
         <div className="absolute top-1/2 right-1/4 w-1 h-1 bg-accent rounded-full animate-pulse opacity-30" style={{ animationDelay: '0.5s' }}></div>
       </div>
 
-      {/* 内容容器 */}
-      <div className="relative z-10 p-4 h-screen flex flex-col">
+      {/* 内容容器 - 在地图之上，默认不拦截点击以便中间区域可操作地图 */}
+      <div className="relative p-4 h-screen flex flex-col pointer-events-none" style={{ zIndex: 10 }}>
         {/* 标题区域 - 全宽布局，梯形延伸到顶部 */}
-        <div className="relative" style={{ marginBottom: '2rem' }}>
+        <div className="relative pointer-events-auto" style={{ marginBottom: '2rem' }}>
             {/* 左上角按钮组 - 与标题中轴线对齐 */}
           <div className="left-buttons-group">
-            <button className="data-entry-btn-fixed">
+            <Link href="/data-entry" className="data-entry-btn-fixed">
               <span className="btn-text">数据录入</span>
-            </button>
-            <button className="data-entry-btn-fixed">
+            </Link>
+            <Link href="/history-data" className="data-entry-btn-fixed">
               <span className="btn-text">历史数据</span>
-            </button>
+            </Link>
             <button className="data-entry-btn-fixed">
               <span className="btn-text">识别库</span>
             </button>
           </div>
 
-          {/* 时间显示 - 固定在最右边 */}
+          {/* 当前时间 - 固定在最右边 */}
           <div className="time-display-fixed">
             <div className="time-text-simple">
               {currentTime.toLocaleString('zh-CN', {
@@ -119,15 +205,15 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* 主网格布局 - 3列布局，中间为空 */}
+        {/* 主网格布局 - 3列布局，中间为空可操作地图 */}
         <div className="flex-1 grid grid-cols-3 gap-4 overflow-hidden">
-          {/* 左侧列 */}
-          <div className="flex flex-col gap-4">
+          {/* 左侧列 - 需可点击图表 */}
+          <div className="flex flex-col gap-4 pointer-events-auto">
             {/* 左上 - 下周鸟情预测折线图 */}
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
-              <div className="card-title text-lg mb-3">下周鸟情趋势预测</div>
+              <div className="card-title text-lg mb-3">近7天鸟情</div>
               <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={mockData.weeklyBirdData}>
+                <LineChart data={displayData.weeklyBirdData}>
                   <defs>
                     <linearGradient id="weeklyGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#00D9FF" stopOpacity={0.8} />
@@ -163,7 +249,7 @@ export default function Dashboard() {
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
               <div className="card-title text-lg mb-3">当日鸟情活动分析</div>
               <ResponsiveContainer width="100%" height={200}>
-                <AreaChart data={mockData.dailyActivityData}>
+                <AreaChart data={displayData.dailyActivityData}>
                   <defs>
                     <linearGradient id="dailyGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#00FF88" stopOpacity={0.6} />
@@ -195,9 +281,9 @@ export default function Dashboard() {
 
             {/* 左下 - 昨日预测vs今日实际 */}
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
-              <div className="card-title text-lg mb-3">昨日预测 vs 今日实际</div>
+              <div className="card-title text-lg mb-3">昨日实际 vs 今日预测</div>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={mockData.predictionVsActualData}>
+                <BarChart data={displayData.predictionVsActualData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 0, 255, 0.15)" />
                   <XAxis dataKey="time" stroke="#a0aeff" style={{ fontSize: "12px" }} />
                   <YAxis stroke="#a0aeff" style={{ fontSize: "12px" }} />
@@ -223,13 +309,13 @@ export default function Dashboard() {
             {/* 空容器，保持中间区域透明以显示背景 */}
           </div>
 
-          {/* 右侧列 */}
-          <div className="flex flex-col gap-4">
+          {/* 右侧列 - 需可点击图表 */}
+          <div className="flex flex-col gap-4 pointer-events-auto">
             {/* 右上 - 时段鸟情分析折线图 */}
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
               <div className="card-title text-lg mb-3">时段鸟情活动分析</div>
               <ResponsiveContainer width="100%" height={200}>
-                <LineChart data={mockData.timeSegmentAnalysisData}>
+                <LineChart data={displayData.timeSegmentAnalysisData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(0, 153, 255, 0.15)" />
                   <XAxis dataKey="time" stroke="#a0aeff" style={{ fontSize: "12px" }} />
                   <YAxis stroke="#a0aeff" style={{ fontSize: "12px" }} />
@@ -262,7 +348,7 @@ export default function Dashboard() {
                   <ResponsiveContainer width="100%" height={160}>
                     <PieChart>
                       <Pie
-                        data={mockData.birdSpecies}
+                        data={displayData.birdSpecies}
                         cx="50%"
                         cy="50%"
                         innerRadius={35}
@@ -272,7 +358,7 @@ export default function Dashboard() {
                         stroke="rgba(0, 217, 255, 0.3)"
                         strokeWidth={1}
                       >
-                        {mockData.birdSpecies.map((entry, index) => (
+                        {displayData.birdSpecies.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -289,7 +375,7 @@ export default function Dashboard() {
                   </ResponsiveContainer>
                 </div>
                 <div className="flex flex-col justify-center space-y-3">
-                  {mockData.birdSpecies.map((species, idx) => (
+                  {displayData.birdSpecies.map((species, idx) => (
                     <div key={idx} className="flex items-center gap-3">
                       <div
                         className="w-4 h-4 rounded-full flex-shrink-0"
@@ -309,7 +395,7 @@ export default function Dashboard() {
             <div className="tech-card p-4 flex-1 min-h-0 scifi-glow">
               <div className="card-title text-lg mb-3">各区域鸟情统计</div>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={mockData.locations}>
+                <BarChart data={displayData.locations}>
                   <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 215, 0, 0.15)" />
                   <XAxis dataKey="name" type="category" stroke="#a0aeff" style={{ fontSize: "12px" }} />
                   <YAxis
@@ -541,13 +627,16 @@ export default function Dashboard() {
           white-space: nowrap;
         }
 
-        /* 固定定位的时间显示 */
+        /* 固定定位的时间显示与数据日期 */
         .time-display-fixed {
           position: fixed;
           top: 3.5rem;
           right: 15rem;
           text-align: center;
           z-index: 1000;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
         }
 
         .time-display-fixed .time-text-simple {
